@@ -1,7 +1,10 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const cors = require('cors')
 const app = express();
+
+app.use(cors())
 const user = require('./routes/user');
 app.use(
     bodyParser.urlencoded({
