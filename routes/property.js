@@ -28,6 +28,16 @@ router.post("/addprop", (req, res) => {
     })
 })
 
+// All the property 
+router.post('/getprop', (req, res) => {
+    Property.find()
+        .then(result => {
+            res.send(result)
+        })
+        .catch(err => {
+            console.log(err)
+        })
+})
 
 // Add Comments
 router.post('/addcomment', (req, res) => {
@@ -56,6 +66,7 @@ router.post('/addcomment', (req, res) => {
     })
 })
 
+// Delete Comments
 router.post('/deletecomment', (req, res) => {
     Property.findOne({ uid: req.body.uid }, (err, property) => {
         if (property.comments == null) {
@@ -77,7 +88,7 @@ router.post('/deletecomment', (req, res) => {
     })
 })
 
-
+// Get Comments
 router.post('/getcomment', (req, res) => {
     Property.findOne({ uid: req.body.uid }, (err, property) => {
         if (!property) {
@@ -86,10 +97,12 @@ router.post('/getcomment', (req, res) => {
             })
         }
         else {
-            res.send(property.comments)
+            return res.send(property.comments)
         }
     })
 })
+
+
 
 
 module.exports = router
