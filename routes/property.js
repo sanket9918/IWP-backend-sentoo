@@ -31,7 +31,7 @@ router.post("/addprop", (req, res) => {
 
 // Add Comments
 router.post('/addcomment', (req, res) => {
-
+    var dup = 0;
 
     Property.findOne({ uid: req.body.uid }, (err, property) => {
         let comment = new Comment({ comment: req.body.comment, email: req.body.email })
@@ -41,21 +41,28 @@ router.post('/addcomment', (req, res) => {
         }
         property.comments.forEach(comment => {
             if (comment.email === req.body.email) {
-                return res.send({
-                    err: 'User already commented'
-                })
+                dup++
             }
         });
-        property.comments.push(comment)
+        (dup > 0) ? res.send({ err: "Already commented" }) : property.comments.push(comment)
+
+
         property
             .save()
-            .then(prop => res.send(prop))
+            .then(prop => res.send({
+                success: true
+            }))
             .catch(err => console.log(err))
     })
 })
 
 router.post('/deletecomment', (req, res) => {
     Property.findOne({ uid: req.body.uid }, (err, property) => {
+        if (property.comments == null) {
+            return res.send({
+                err: "No comment to delete"
+            })
+        }
         property.comments = property.comments.filter((ele) => {
             if (ele.email == req.body.email) {
                 return false
@@ -63,9 +70,26 @@ router.post('/deletecomment', (req, res) => {
             else return true;
         })
         property.save()
-            .then((result) => res.send(result))
+            .then((result) => res.send({
+                success: true
+            }))
             .catch(err => console.log(err))
     })
 })
+
+
+router.post('/getcomment', (req, res) => {
+    Property.findOne({ uid: req.body.uid }, (err, property) => {
+        if (!property) {
+            return res.send({
+                err: "No such property exists"
+            })
+        }
+        else {
+            res.send(property.comments)
+        }
+    })
+})
+
 
 module.exports = router
