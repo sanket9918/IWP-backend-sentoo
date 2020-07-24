@@ -3,7 +3,8 @@ const Schema = Mongoose.Schema;
 
 const comment = new Schema({
     email: {
-        type:String
+        type: String,
+        required:true
     },
     comment: {
         type: String,
@@ -12,6 +13,7 @@ const comment = new Schema({
 const property = new Schema({
     uid: {
         type: Number,
+        required:true
     },
     code: {
         type: String,
