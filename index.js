@@ -6,6 +6,7 @@ const app = express();
 
 app.use(cors())
 const user = require('./routes/user');
+const property = require('./routes/property')
 app.use(
     bodyParser.urlencoded({
         extended: false
@@ -25,6 +26,7 @@ mongoose
             console.log('MongoDB cannot connect');
         })
 app.use('/api/user', user);
+app.use('/api/property', property)
 
 const port = process.env.PORT || 5000;
 app.listen(port, () => {
