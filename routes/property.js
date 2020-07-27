@@ -103,6 +103,32 @@ router.post('/getcomment', (req, res) => {
 })
 
 
+// Get user's comment
+
+router.post('/getusercomment', (req, res) => {
+    let target = [] 
+    Property.findOne({ uid: req.body.uid }, (err, property) => {
+        if (!property) {
+            return
+        }
+       
+        property.comments.forEach(e => {
+            if (e.email == req.body.email) {
+                target.push(e)
+            }
+        })
+        
+        if (target.length==0) {
+            return 
+           
+        }
+        else {
+            return res.send(target[0].comment)
+        }
+    })
+})
+
+
 
 
 module.exports = router
