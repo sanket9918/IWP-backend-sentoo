@@ -9,6 +9,9 @@ const comment = new Schema({
   comment: {
     type: String,
   },
+  rating: {
+    type: Number,
+  },
 });
 const property = new Schema({
   uid: {
@@ -25,7 +28,7 @@ const property = new Schema({
     type: String,
   },
   comments: [comment],
-  rating: {
+  prop_rating: {
     type: Number,
     default: 0,
   },

@@ -44,37 +44,9 @@ router.post("/addcomment", (req, res) => {
   var dup = 0;
 
   Property.findOne({ uid: req.body.uid }, (err, property) => {
-    let comment = new Comment({
-      comment: req.body.comment,
-      email: req.body.email,
-    });
-
-    if (property.comments == null) {
-      property.comments = [comment];
-    }
-    property.comments.forEach((comment) => {
-      if (comment.email === req.body.email) {
-        dup++;
-      }
-    });
-    dup > 0
-      ? res.send({ err: "Already commented" })
-      : property.comments.push(comment);
-
-    property
-      .save()
-      .then((prop) =>
-        res.send({
-          success: true,
-        })
-      )
-      .catch((err) => console.log(err));
-  });
-});
-
-router.post("/getRating", (req, res) => {
-  var rating_final;
-  Property.findOne({ uid: req.body.uid }, (err, response) => {
+    var rating_final;
+    var score = 0;
+    var count = 0;
     async function getRating() {
       return axios
         .post(sentimentAPI, {
@@ -87,55 +59,116 @@ router.post("/getRating", (req, res) => {
           res.send(err);
         });
     }
-
     async function setRating() {
       rating_final = await getRating();
-      if (Object.keys(response.comments).length === 0) {
-        response.rating = 0;
-      } else {
-        response.rating =
-          (response.rating + rating_final) /
-          Object.keys(response.comments).length;
+      let comment = new Comment({
+        comment: req.body.comment,
+        email: req.body.email,
+        rating: rating_final,
+      });
+
+      if (property.comments == null) {
+        property.comments = [comment];
       }
-      response
+      property.comments.forEach((comment) => {
+        count++;
+        if (comment.rating === 1) {
+          score++;
+        }
+        if (comment.email === req.body.email) {
+          dup++;
+        }
+      });
+      dup > 0
+        ? res.send({ err: "Already commented" })
+        : property.comments.push(comment);
+
+      if (count >= 0) {
+        (property.prop_rating =
+          ((score + rating_final) / (count + 1)) * 100).toFixed(2);
+      } else {
+        property.prop_rating = 0;
+      }
+
+      property
         .save()
-        .then((data) => {
+        .then((prop) =>
           res.send({
-            data,
-          });
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+            success: true,
+          })
+        )
+        .catch((err) => console.log(err));
     }
     setRating();
   });
 });
 
+router.post("/getRating", (req, res) => {
+  Property.findOne({ uid: req.body.uid }, (err, property) => {
+    if (!property) {
+      return res.send({
+        err: "Nothing to display",
+      });
+    } else {
+      // ratings = property.prop_rating.toString();
+      return res.send({
+        rating: property.prop_rating,
+      });
+    }
+  });
+});
 // Delete Comments
 router.post("/deletecomment", (req, res) => {
   Property.findOne({ uid: req.body.uid }, (err, property) => {
+    var rating_to_be_deleted;
+    var score = 0;
+    var count = 0;
+
     if (property.comments == null) {
       return res.send({
         err: "No comment to delete",
       });
     }
-    property.comments = property.comments.filter((ele) => {
-      if (ele.email == req.body.email) {
-        return false;
-      } else return true;
+    property.comments.forEach((cmt) => {
+      count++;
+      if (cmt.rating === 1) {
+        score++;
+      }
+      if (cmt.email == req.body.email) {
+        rating_to_be_deleted = cmt.rating;
+        if (count <= 1) {
+          property.prop_rating = 0;
+        }
+        if (count === 1);
+        property.prop_rating = (
+          ((score - rating_to_be_deleted) / count) *
+          100
+        ).toFixed(2);
+        if (count > 1) {
+          property.prop_rating = (
+            ((score - rating_to_be_deleted) / (count - 1)) *
+            100
+          ).toFixed(2);
+        }
+      }
     });
-    property
-      .save()
-      .then((result) =>
-        res.send({
-          success: true,
-        })
-      )
-      .catch((err) => console.log(err));
+    property.comments.forEach((comment) => {
+      property.comments = property.comments.filter((ele) => {
+        if (ele.email == req.body.email) {
+          return false;
+        } else return true;
+      });
+      property
+        .save()
+        .then((result) =>
+          res.send({
+            success: true,
+          })
+        )
+        .catch((err) => console.log(err));
+    });
   });
 });
-
 // Get Comments
 router.post("/getcomment", (req, res) => {
   Property.findOne({ uid: req.body.uid }, (err, property) => {
