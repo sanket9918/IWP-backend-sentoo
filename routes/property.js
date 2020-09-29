@@ -158,15 +158,16 @@ router.post("/deletecomment", (req, res) => {
           return false;
         } else return true;
       });
-      property
-        .save()
-        .then((result) =>
-          res.send({
-            success: true,
-          })
-        )
-        .catch((err) => console.log(err));
+
     });
+    property
+      .save()
+      .then((result) =>
+        res.send({
+          success: true,
+        })
+      )
+      .catch((err) => console.log(err));
   });
 });
 // Get Comments
